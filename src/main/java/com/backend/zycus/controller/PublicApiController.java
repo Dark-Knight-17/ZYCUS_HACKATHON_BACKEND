@@ -79,8 +79,8 @@ public class PublicApiController {
 		   }   
 	   }
 	   
-	   @PatchMapping("/suggestions/{id}")
-	   public ResponseEntity<AgentResponseDto> acceptOrRejectSuggestion(@PathVariable String id,@PathVariable String status){
+	   @PatchMapping("/suggestions/")
+	   public ResponseEntity<AgentResponseDto> suggestEmployees(){
 		   
 		   AgentResponseDto response =null;
 		   
