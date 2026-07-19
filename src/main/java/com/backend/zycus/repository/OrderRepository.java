@@ -5,43 +5,27 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.backend.zycus.entity.Order;
+import com.backend.zycus.model.OrderStatus;
 
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+@Repository
+public interface OrderRepository extends JpaRepository<Order, String> {
 
-   /**
-    * Orders assigned to an agent.
-    */
-   List<Order> findByAssignedAgentId(Long agentId);
-
-   /**
-    * Used by GET /orders?status=
-    */
-   List<Order> findByStatus(String status);
-
-   /**
-    * Prevents N+1 while returning orders.
-    */
-   @Query("""
-       select o
-       from Order o
-       join fetch o.assignedAgent
-       """)
-   List<Order> findAllWithAssignedAgent();
-
-   /**
-    * Used after agent goes offline.
-    */
-   @Query("""
-       select o
-       from Order o
-       join fetch o.assignedAgent
-       where o.assignedAgent.id = :agentId
-       and o.status = 'ASSIGNED'
-       """)
-   List<Order> findAssignedOrdersOfAgent(Long agentId);
-   
-
+    /**
+     * Triggered during the async reactive loop.
+     * Fetches all active orders for an agent who just went OFFLINE.
+     * Uses JOIN FETCH to pull the Agent data in the same query, preventing N+1 
+     * if the Routing Engine needs agent details to calculate the next move.
+     */
+    @Query("SELECT o FROM Order o " +
+           "JOIN FETCH o.assignedAgent a " +
+           "WHERE a.id = :agentId AND o.status IN :statuses")
+    List<Order> findActiveOrdersByAgentId(
+            @Param("agentId") String agentId, 
+            @Param("statuses") List<OrderStatus> statuses
+    );
 }

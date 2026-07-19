@@ -1,125 +1,84 @@
 package com.backend.zycus.entity;
 
 
+import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.backend.zycus.model.SuggestionStatus;
+import com.backend.zycus.model.TriggerReason;
 
 @Entity
-@Table(name="reassignment_suggestions")
+@Table(name = "reassignment_suggestions")
 public class ReassignmentSuggestion {
 
-   @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+    
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "recommended_agent_id")
+    private Agent recommendedAgent;
+    
+    @Column(name = "confidence_score", precision = 3, scale = 2)
+    private BigDecimal confidenceScore;
+    
+    @Column(columnDefinition = "TEXT")
+    private String reasoning;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SuggestionStatus status;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "trigger_reason", nullable = false)
+    private TriggerReason triggerReason;
+    
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-   @ManyToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name="order_id",nullable=false)
-   private Order order;
+    // --- Constructors ---
+    public ReassignmentSuggestion() {
+    }
 
-   @ManyToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name="recommended_agent_id",nullable=false)
-   private Agent recommendedAgent;
+    public ReassignmentSuggestion(Order order, Agent recommendedAgent, BigDecimal confidenceScore, 
+                                  String reasoning, SuggestionStatus status, TriggerReason triggerReason, 
+                                  LocalDateTime createdAt) {
+        this.order = order;
+        this.recommendedAgent = recommendedAgent;
+        this.confidenceScore = confidenceScore;
+        this.reasoning = reasoning;
+        this.status = status;
+        this.triggerReason = triggerReason;
+        this.createdAt = createdAt;
+    }
 
-   @Column(name="recommendation_type",nullable=false,length=20)
-   private String recommendationType;
+    // --- Getters and Setters ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-   @Column(name="confidence_score")
-   private Double confidenceScore;
+    public Order getOrder() { return order; }
+    public void setOrder(Order order) { this.order = order; }
 
-   @Column(length=2000)
-   private String reasoning;
+    public Agent getRecommendedAgent() { return recommendedAgent; }
+    public void setRecommendedAgent(Agent recommendedAgent) { this.recommendedAgent = recommendedAgent; }
 
-   @Column(nullable=false,length=30)
-   private String status;
+    public BigDecimal getConfidenceScore() { return confidenceScore; }
+    public void setConfidenceScore(BigDecimal confidenceScore) { this.confidenceScore = confidenceScore; }
 
-   @Column(name="trigger_reason",nullable=false,length=30)
-   private String triggerReason;
+    public String getReasoning() { return reasoning; }
+    public void setReasoning(String reasoning) { this.reasoning = reasoning; }
 
-   @Column(name="created_at")
-   private LocalDateTime createdAt;
+    public SuggestionStatus getStatus() { return status; }
+    public void setStatus(SuggestionStatus status) { this.status = status; }
 
-   public ReassignmentSuggestion() {
-   }
+    public TriggerReason getTriggerReason() { return triggerReason; }
+    public void setTriggerReason(TriggerReason triggerReason) { this.triggerReason = triggerReason; }
 
-   public Long getId() {
-       return id;
-   }
-
-   public void setId(Long id) {
-       this.id=id;
-   }
-
-   public Order getOrder() {
-       return order;
-   }
-
-   public void setOrder(Order order) {
-       this.order=order;
-   }
-
-   public Agent getRecommendedAgent() {
-       return recommendedAgent;
-   }
-
-   public void setRecommendedAgent(Agent recommendedAgent) {
-       this.recommendedAgent=recommendedAgent;
-   }
-
-   public String getRecommendationType() {
-       return recommendationType;
-   }
-
-   public void setRecommendationType(String recommendationType) {
-       this.recommendationType=recommendationType;
-   }
-
-   public Double getConfidenceScore() {
-       return confidenceScore;
-   }
-
-   public void setConfidenceScore(Double confidenceScore) {
-       this.confidenceScore=confidenceScore;
-   }
-
-   public String getReasoning() {
-       return reasoning;
-   }
-
-   public void setReasoning(String reasoning) {
-       this.reasoning=reasoning;
-   }
-
-   public String getStatus() {
-       return status;
-   }
-
-   public void setStatus(String status) {
-       this.status=status;
-   }
-
-   public String getTriggerReason() {
-       return triggerReason;
-   }
-
-   public void setTriggerReason(String triggerReason) {
-       this.triggerReason=triggerReason;
-   }
-
-   public LocalDateTime getCreatedAt() {
-       return createdAt;
-   }
-
-   public void setCreatedAt(LocalDateTime createdAt) {
-       this.createdAt=createdAt;
-   }
-
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

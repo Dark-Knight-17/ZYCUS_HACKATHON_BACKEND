@@ -1,74 +1,56 @@
 package com.backend.zycus.entity;
 
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+import com.backend.zycus.model.OrderStatus;
 
 @Entity
-@Table(name="orders")
+@Table(name = "orders")
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-
-    @Column(name="description",nullable=false)
+    private String id;
+    
+    @Column(nullable = false)
     private String description;
-
-    @Column(nullable=false,length=30)
-    private String status;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="assigned_agent_id",nullable=false)
+    @JoinColumn(name = "assigned_agent_id")
     private Agent assignedAgent;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status;
+    
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
+    // --- Constructors ---
     public Order() {
     }
 
-    public Long getId() {
-        return id;
+    public Order(String id, String description, Agent assignedAgent, OrderStatus status, LocalDateTime createdAt) {
+        this.id = id;
+        this.description = description;
+        this.assignedAgent = assignedAgent;
+        this.status = status;
+        this.createdAt = createdAt;
     }
 
-    public void setId(Long id) {
-        this.id=id;
-    }
+    // --- Getters and Setters ---
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
+    public Agent getAssignedAgent() { return assignedAgent; }
+    public void setAssignedAgent(Agent assignedAgent) { this.assignedAgent = assignedAgent; }
 
-    public String getDescription() {
-        return description;
-    }
+    public OrderStatus getStatus() { return status; }
+    public void setStatus(OrderStatus status) { this.status = status; }
 
-    @Override
-	public String toString() {
-		return "Order [id=" + id + ", description=" + description + ", status=" + status + ", assignedAgent="
-				+ assignedAgent + "]";
-	}
-
-	public void setDescription(String description) {
-        this.description=description;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status=status;
-    }
-
-    public Agent getAssignedAgent() {
-        return assignedAgent;
-    }
-
-    public void setAssignedAgent(Agent assignedAgent) {
-        this.assignedAgent=assignedAgent;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

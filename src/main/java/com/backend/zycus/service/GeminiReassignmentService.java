@@ -1,4 +1,4 @@
-package com.backend.zycus.service.impl;
+package com.backend.zycus.service;
 
 import java.util.List;
 import java.util.stream.Collectors;

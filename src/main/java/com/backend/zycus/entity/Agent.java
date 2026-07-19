@@ -1,67 +1,47 @@
 package com.backend.zycus.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.backend.zycus.model.AgentStatus;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "agents")
 public class Agent {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false,length = 100)
+    private String id;
+    
+    @Column(nullable = false)
     private String name;
+    
+    @Column(name = "active_order_count")
+    private int activeOrderCount;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AgentStatus status;
 
-    @Column(nullable = false,length = 30)
-    private String status;
-
-    @Column(name = "active_order_count",nullable = false)
-    private Integer activeOrderCount;
-
+    // --- Constructors ---
     public Agent() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    @Override
-	public String toString() {
-		return "Agent [id=" + id + ", name=" + name + ", status=" + status + ", activeOrderCount=" + activeOrderCount
-				+ "]";
-	}
-
-	public void setId(Long id) {
+    public Agent(String id, String name, int activeOrderCount, AgentStatus status) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
-    }
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-    public Integer getActiveOrderCount() {
-        return activeOrderCount;
-    }
-
-    public void setActiveOrderCount(Integer activeOrderCount) {
         this.activeOrderCount = activeOrderCount;
+        this.status = status;
     }
+
+    // --- Getters and Setters ---
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public int getActiveOrderCount() { return activeOrderCount; }
+    public void setActiveOrderCount(int activeOrderCount) { this.activeOrderCount = activeOrderCount; }
+
+    public AgentStatus getStatus() { return status; }
+    public void setStatus(AgentStatus status) { this.status = status; }
 }

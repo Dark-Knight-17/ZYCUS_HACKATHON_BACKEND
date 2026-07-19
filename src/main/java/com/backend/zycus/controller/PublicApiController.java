@@ -79,22 +79,7 @@ public class PublicApiController {
 		   }   
 	   }
 	   
-	   @PatchMapping("/suggestions/")
-	   public ResponseEntity<AgentResponseDto> suggestEmployees(){
-		   
-		   AgentResponseDto response =null;
-		   
-		   try {
-			   // add check if valid status
-			   response=agentService.updateAgentAvailability(Long.valueOf(id),status);
-		       return new ResponseEntity<>(response, HttpStatus.OK);
-		   }
-		   
-		   catch(Exception e) {
-			   e.printStackTrace();
-        	   return  new ResponseEntity<>( HttpStatus.BAD_REQUEST);
-		   }   
-	   }
+
 	   
 	   
 	

@@ -1,62 +1,49 @@
 package com.backend.zycus.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.backend.zycus.dto.OrderResponseDto;
+import com.backend.zycus.dto.OrderDto;
+import com.backend.zycus.dto.OrderRequestDto;
+import com.backend.zycus.entity.Agent;
 import com.backend.zycus.entity.Order;
+import com.backend.zycus.model.OrderStatus;
+import com.backend.zycus.repository.AgentRepository;
 import com.backend.zycus.repository.OrderRepository;
-import com.backend.zycus.utility.OrderMapper;
+import com.backend.zycus.utility.DtoMapper;
+
+import java.util.List;
 
 @Service
 public class OrderService {
-	
-	private final OrderRepository orderRepository;
-	private final OrderMapper orderMapper;
-	
-	public OrderService (OrderRepository orderRepository,OrderMapper orderMapper) {
-		this. orderRepository= orderRepository;
-		this.orderMapper=orderMapper;
-	}
-	
-	public List<OrderResponseDto> getOrderResponse(){
-		List<OrderResponseDto> response = new ArrayList<>();
-		List<Order> list= orderRepository.findAllWithAssignedAgent();
-		for(Order o: list) {
-			OrderResponseDto dto=orderMapper.toResponseDto(o);
-			response.add(dto);	
-		}
-		return response;	
-	}
-	
-	public OrderResponseDto saveOrder(Order order) {
-		Order o=null;
-		OrderResponseDto response=null;
-		try {
-			 o=orderRepository.save(order);	
-			 response=orderMapper.toResponseDto(o);
-		}	
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		return response;	
-	}
 
-	
-	public List<OrderResponseDto> findByStatus(String status){
-		
-		List<OrderResponseDto> response = new ArrayList<>();
-		List<Order> list= orderRepository.findByStatus(status);
-		for(Order o: list) {
-			OrderResponseDto dto=orderMapper.toResponseDto(o);
-			response.add(dto);	
-		}
-		return response;	
-		
-	}
-	
-	
+    private final OrderRepository orderRepository;
+    private final AgentRepository agentRepository;
+    private final DtoMapper dtoMapper;
+
+    public OrderService(OrderRepository orderRepository, AgentRepository agentRepository, DtoMapper dtoMapper) {
+        this.orderRepository = orderRepository;
+        this.agentRepository = agentRepository;
+        this.dtoMapper = dtoMapper;
+    }
+
+    @Transactional
+    public OrderDto createOrder(OrderRequestDto request) {
+        Agent agent = agentRepository.findById(request.assignedAgentId())
+                .orElseThrow(() -> new IllegalArgumentException("Agent not found: " + request.assignedAgentId()));
+
+        // Use the mapper to convert DTO to Entity
+        Order order = dtoMapper.toOrderEntity(request, agent);
+        Order savedOrder = orderRepository.save(order);
+        
+        return dtoMapper.toOrderDto(savedOrder);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Order> getActiveOrdersForAgent(String agentId) {
+        return orderRepository.findActiveOrdersByAgentId(
+                agentId, 
+                List.of(OrderStatus.ASSIGNED, OrderStatus.REASSIGNMENT_PENDING)
+        );
+    }
 }
