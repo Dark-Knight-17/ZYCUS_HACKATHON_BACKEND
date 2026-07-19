@@ -3,14 +3,14 @@ package com.backend.zycus.event;
 import org.springframework.context.ApplicationEvent;
 
 public class AgentOfflineEvent extends ApplicationEvent {
-    private final String agentId;
+    private final Long agentId;
 
-    public AgentOfflineEvent(Object source, String agentId) {
+    public AgentOfflineEvent(Object source, Long agentId) {
         super(source);
         this.agentId = agentId;
     }
 
-    public String getAgentId() {
+    public Long getAgentId() {
         return agentId;
     }
 }

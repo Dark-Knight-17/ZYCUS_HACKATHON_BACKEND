@@ -9,8 +9,10 @@ import com.backend.zycus.model.OrderStatus;
 @Table(name = "orders")
 public class Order {
 
-    @Id
-    private String id;
+	  @Id
+	    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	    
+    private Long id;
     
     @Column(nullable = false)
     private String description;
@@ -30,7 +32,7 @@ public class Order {
     public Order() {
     }
 
-    public Order(String id, String description, Agent assignedAgent, OrderStatus status, LocalDateTime createdAt) {
+    public Order(Long id, String description, Agent assignedAgent, OrderStatus status, LocalDateTime createdAt) {
         this.id = id;
         this.description = description;
         this.assignedAgent = assignedAgent;
@@ -39,8 +41,8 @@ public class Order {
     }
 
     // --- Getters and Setters ---
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

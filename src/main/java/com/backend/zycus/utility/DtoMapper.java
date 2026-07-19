@@ -10,7 +10,9 @@ import com.backend.zycus.entity.Agent;
 import com.backend.zycus.entity.Order;
 import com.backend.zycus.entity.ReassignmentSuggestion;
 import com.backend.zycus.model.OrderStatus;
+import com.backend.zycus.model.SuggestionStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -42,20 +44,23 @@ public class DtoMapper {
                 order.getStatus()
         );
     }
-
+    
     public SuggestionResponseDto toSuggestionResponseDto(ReassignmentSuggestion suggestion) {
         if (suggestion == null) return null;
-        
+
         return new SuggestionResponseDto(
-                suggestion.getId(),
-                suggestion.getOrder().getId(),
-                suggestion.getOrder().getDescription(),
-                suggestion.getRecommendedAgent().getId(),
-                suggestion.getRecommendedAgent().getName(),
-                suggestion.getConfidenceScore(),
-                suggestion.getReasoning(),
-                suggestion.getStatus(),
-                suggestion.getCreatedAt()
+            suggestion.getId(),                                     // 1. Long id
+            suggestion.getOrder().getId(),          // 2. Long orderId
+            suggestion.getOrder().getDescription(),                 // 3. String orderDescription
+            String.valueOf(suggestion.getRecommendedAgent().getId()),// 4. String recommendedAgentId
+            suggestion.getRecommendedAgent().getName(),             // 5. String recommendedAgentName
+            suggestion.getPreviousAgentId(),                        // 6. Long previousAgentId
+            (suggestion.getTriggerReason() != null) ? suggestion.getTriggerReason().name() : null, // 7. String triggerReason
+            suggestion.getConfidenceScore(),                        // 8. BigDecimal confidenceScore
+            suggestion.getReasoning(),                              // 9. String reasoning
+            suggestion.getAlternativeRecommendationsJson(),         // 10. String alternativeRecommendationsJson
+            suggestion.getStatus(),                                 // 11. SuggestionStatus status
+            suggestion.getCreatedAt()                               // 12. LocalDateTime createdAt
         );
     }
 
@@ -63,16 +68,14 @@ public class DtoMapper {
     // DTO -> ENTITY (For Incoming Requests)
     // ==========================================
 
-    public Order toOrderEntity(OrderRequestDto request, Agent assignedAgent) {
+    public Order toOrderEntity(OrderRequestDto request) {
         if (request == null) return null;
-        
+
         Order order = new Order();
-        order.setId(UUID.randomUUID().toString()); // Generate ID here securely
         order.setDescription(request.description());
-        order.setAssignedAgent(assignedAgent);
-        order.setStatus(OrderStatus.ASSIGNED);
-        order.setCreatedAt(LocalDateTime.now());
         
+        // Note: We do NOT set the Agent here. 
+        // We set the agent in the Service layer after fetching it from the DB.
         return order;
     }
 }

@@ -1,18 +1,24 @@
 package com.backend.zycus.dto;
+ 
+
+import com.backend.zycus.model.SuggestionStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.backend.zycus.model.SuggestionStatus;
-
 public record SuggestionResponseDto(
     Long id, 
-    String orderId, 
+    Long orderId, 
     String orderDescription, 
     String recommendedAgentId, 
     String recommendedAgentName,
+    Long previousAgentId,
+    String triggerReason,
     BigDecimal confidenceScore,
     String reasoning,
+    String alternativeRecommendationsJson,
     SuggestionStatus status,
     LocalDateTime createdAt
 ) {}
+
+ 

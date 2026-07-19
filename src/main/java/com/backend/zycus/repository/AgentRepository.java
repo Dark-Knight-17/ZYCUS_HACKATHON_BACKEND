@@ -14,11 +14,13 @@ import com.backend.zycus.model.AgentStatus;
 
 
 @Repository
-public interface AgentRepository extends JpaRepository<Agent, String> {
+public interface AgentRepository extends JpaRepository<Agent, Long> {
     
     /**
      * Used by the Routing Engine to fetch all currently AVAILABLE agents 
      * when calculating reassignment recommendations.
      */
     List<Agent> findByStatus(AgentStatus status);
+    List<Agent> findByStatus(String status);
+
 }

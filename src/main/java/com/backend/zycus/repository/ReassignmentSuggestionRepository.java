@@ -37,7 +37,7 @@ public interface ReassignmentSuggestionRepository extends JpaRepository<Reassign
      * duplicate PENDING suggestions for the same order and trigger.
      */
     boolean existsByOrderIdAndStatusAndTriggerReason(
-            String orderId, 
+    		Long orderId, 
             SuggestionStatus status, 
             TriggerReason triggerReason
     );

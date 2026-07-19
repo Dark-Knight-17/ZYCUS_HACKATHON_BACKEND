@@ -9,7 +9,8 @@ import jakarta.persistence.*;
 public class Agent {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long  id;
     
     @Column(nullable = false)
     private String name;
@@ -25,7 +26,7 @@ public class Agent {
     public Agent() {
     }
 
-    public Agent(String id, String name, int activeOrderCount, AgentStatus status) {
+    public Agent(Long id, String name, int activeOrderCount, AgentStatus status) {
         this.id = id;
         this.name = name;
         this.activeOrderCount = activeOrderCount;
@@ -33,8 +34,8 @@ public class Agent {
     }
 
     // --- Getters and Setters ---
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public Long getId() { return this.id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

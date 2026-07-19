@@ -4,32 +4,37 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import com.backend.zycus.model.AgentStatus;
+import com.backend.zycus.model.TriggerReason;
+import com.backend.zycus.repository.AgentRepository;
 import com.backend.zycus.service.OrderService;
 import com.backend.zycus.service.ReassignmentSuggestionService;
+import com.backend.zycus.strategy.ReassignmentOrchestrator;
+import com.backend.zycus.strategy.ReassignmentResult;
+
 
 @Component
 public class AgentOfflineListener {
-
     private final OrderService orderService;
+    private final AgentRepository agentRepository;
     private final ReassignmentSuggestionService suggestionService;
+    private final ReassignmentOrchestrator orchestrator;
 
-    public AgentOfflineListener(OrderService orderService, ReassignmentSuggestionService suggestionService) {
-        this.orderService = orderService;
-        this.suggestionService = suggestionService;
+    public AgentOfflineListener(OrderService os, AgentRepository ar, ReassignmentSuggestionService rss, ReassignmentOrchestrator ro) {
+        this.orderService = os; this.agentRepository = ar; this.suggestionService = rss; this.orchestrator = ro;
     }
 
-    @Async // Runs in a separate thread, non-blocking!
+    @Async
     @EventListener
     public void handleAgentOffline(AgentOfflineEvent event) {
-        String agentId = event.getAgentId();
-        
-        // 1. Fetch active orders (using OrderService)
-        var activeOrders = orderService.getActiveOrdersForAgent(agentId);
-        
-        // 2. Loop through orders and trigger the Routing Strategy
-        // Logic to interface with your RuleBased/AI strategy goes here
-        activeOrders.forEach(order -> {
-             // Example: suggestionService.createSuggestionIfValid(...);
-        });
+        var orders = orderService.getActiveOrdersForAgent(event.getAgentId());
+        var candidates = agentRepository.findByStatus(AgentStatus.AVAILABLE);
+
+        for (var order : orders) {
+            ReassignmentResult result = orchestrator.getBestResult(order, candidates);
+            if (!result.recommendations().isEmpty()) {
+                 suggestionService.createSuggestionIfValid(order, result, TriggerReason.AGENT_OFFLINE);
+            }
+        }
     }
-    }
+}

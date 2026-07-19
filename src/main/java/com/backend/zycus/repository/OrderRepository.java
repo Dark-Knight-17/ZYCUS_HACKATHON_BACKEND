@@ -13,7 +13,7 @@ import com.backend.zycus.model.OrderStatus;
 
 
 @Repository
-public interface OrderRepository extends JpaRepository<Order, String> {
+public interface OrderRepository extends JpaRepository<Order, Long> {
 
     /**
      * Triggered during the async reactive loop.
@@ -25,7 +25,9 @@ public interface OrderRepository extends JpaRepository<Order, String> {
            "JOIN FETCH o.assignedAgent a " +
            "WHERE a.id = :agentId AND o.status IN :statuses")
     List<Order> findActiveOrdersByAgentId(
-            @Param("agentId") String agentId, 
+            @Param("agentId") Long agentId, 
             @Param("statuses") List<OrderStatus> statuses
     );
+    
+    List<Order> findByStatus(String status);
 }
