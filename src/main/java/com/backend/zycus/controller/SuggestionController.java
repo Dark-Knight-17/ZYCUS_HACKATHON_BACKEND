@@ -1,6 +1,8 @@
 package com.backend.zycus.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,36 +19,48 @@ public class SuggestionController {
     public SuggestionController(ReassignmentSuggestionService suggestionService) {
         this.suggestionService = suggestionService;
     }
-
     @PatchMapping("/{id}")
-    public ResponseEntity<String> updateSuggestionStatus(
-            @PathVariable String id, 
+    public ResponseEntity<?> updateSuggestionStatus(
+            @PathVariable("id") Long id,
             @RequestBody String status) {
-        
+
         try {
-            Long suggestionId = Long.valueOf(id);
-            suggestionService.updateStatus(suggestionId, status);
-            return ResponseEntity.noContent().build();
-            
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body("Invalid ID format");
+
+            suggestionService.updateStatus(id, status);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Suggestion updated successfully");
+            response.put("suggestionId", id);
+            response.put("status", status);
+
+            return ResponseEntity.ok(response);
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid status format");
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Invalid status format");
+
+            return ResponseEntity.badRequest().body(response);
+
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update failed");
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Update failed");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+
         }
-    }
-    
-    @GetMapping
-    public ResponseEntity<?> getSuggestionStatus() {
-        try {
-            List<SuggestionResponseDto> sugestions = suggestionService.getPendingSuggestions();
-            return ResponseEntity.ok(sugestions);
-        } catch (Exception e) {  
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); 
-        }
+
     }
 }

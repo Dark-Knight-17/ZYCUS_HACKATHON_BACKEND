@@ -15,16 +15,22 @@ import com.backend.zycus.strategy.ReassignmentOrchestrator;
 import com.backend.zycus.strategy.ReassignmentResult;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/public/v1/orders")
+
 public class OrderController {
-    
+
     private final OrderService orderService;
     private final ReassignmentOrchestrator orchestrator;
     private final ReassignmentSuggestionService suggestionService;
 
-    public OrderController(OrderService orderService, ReassignmentOrchestrator orchestrator, ReassignmentSuggestionService suggestionService) {
+    public OrderController(
+            OrderService orderService,
+            ReassignmentOrchestrator orchestrator,
+            ReassignmentSuggestionService suggestionService) {
+
         this.orderService = orderService;
         this.orchestrator = orchestrator;
         this.suggestionService = suggestionService;
@@ -32,41 +38,135 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<?> createOrder(@RequestBody OrderRequestDto order) {
-        if (order == null) return ResponseEntity.badRequest().body("Order request cannot be empty");
-        try {
-            return ResponseEntity.ok(orderService.createOrder(order));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create order");
+
+        if (order == null) {
+
+            return ResponseEntity.badRequest().body(
+                    Map.of(
+                            "success", false,
+                            "message", "Order request cannot be empty"
+                    )
+            );
+
         }
+
+        try {
+
+            OrderDto createdOrder = orderService.createOrder(order);
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "success", true,
+                            "message", "Order created successfully",
+                            "data", createdOrder
+                    )
+            );
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of(
+                            "success", false,
+                            "message", "Failed to create order"
+                    )
+            );
+
+        }
+
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> listOrders(@RequestParam(name = "status",required = false) String status) {
-    	if(status==null || status.equals("ALL")) {
-            return ResponseEntity.ok(orderService.findAll());
+    public ResponseEntity<?> listOrders(
+            @RequestParam(name = "status", required = false) String status) {
 
-    	}
-        return ResponseEntity.ok(orderService.findByStatus(status));
+        try {
+
+            List<Order> orders;
+
+            if (status == null || status.equals("ALL")) {
+                orders = orderService.findAll();
+            } else {
+                orders = orderService.findByStatus(status);
+            }
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "success", true,
+                            "data", orders
+                    )
+            );
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of(
+                            "success", false,
+                            "message", "Unable to fetch orders"
+                    )
+            );
+
+        }
+
     }
 
     @PostMapping("/{id}/suggest")
-    public ResponseEntity<?> triggerSuggestion(@PathVariable("id") String id) {
+    public ResponseEntity<?> triggerSuggestion(
+            @PathVariable("id") Long id) {
+
         try {
-            Order order = orderService.findById(Long.valueOf(id));
-            if (order == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found");
-            
+
+            Order order = orderService.findById(id);
+
+            if (order == null) {
+
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        Map.of(
+                                "success", false,
+                                "message", "Order not found"
+                        )
+                );
+
+            }
+
             List<Agent> candidates = orderService.getAvailableAgents();
-            ReassignmentResult result = orchestrator.getBestResult(order, candidates);
-            
-            suggestionService.createSuggestionIfValid(order, result, TriggerReason.INITIAL);
-            return ResponseEntity.ok().build();
-            
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body("Invalid Order ID format");
+
+            ReassignmentResult result =
+                    orchestrator.getBestResult(order, candidates);
+
+            suggestionService.createSuggestionIfValid(
+                    order,
+                    result,
+                    TriggerReason.INITIAL
+            );
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "success", true,
+                            "message", "Suggestion generated successfully",
+                            "orderId", id
+                    )
+            );
+
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of(
+                            "success", false,
+                            "message", e.getMessage()
+                    )
+            );
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Orchestration failed");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of(
+                            "success", false,
+                            "message", "Suggestion generation failed"
+                    )
+            );
+
         }
+
     }
+
 }

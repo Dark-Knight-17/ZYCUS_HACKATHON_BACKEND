@@ -1,6 +1,7 @@
 package com.backend.zycus.controller;
 
  import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.springframework.http.HttpStatus;
@@ -35,12 +36,26 @@ public class AgentController {
             return ResponseEntity.ok(agents);
 
         } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+
+            return ResponseEntity.badRequest().body(
+                    Map.of(
+                            "success", false,
+                            "message", ex.getMessage()
+                    )
+            );
 
         } catch (Exception ex) {
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Unable to fetch agents.");
+                    .body(
+                            Map.of(
+                                    "success", false,
+                                    "message", "Unable to fetch agents."
+                            )
+                    );
+
         }
+
     }
 
     @PatchMapping("/{id}/status")
@@ -52,18 +67,45 @@ public class AgentController {
 
             AgentDto agent = agentService.updateStatus(agentId, newStatus);
 
-            return ResponseEntity.ok(agent);
+            return ResponseEntity.ok(
+                    Map.of(
+                            "success", true,
+                            "message", "Agent status updated successfully.",
+                            "data", agent
+                    )
+            );
 
         } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+
+            return ResponseEntity.badRequest().body(
+                    Map.of(
+                            "success", false,
+                            "message", ex.getMessage()
+                    )
+            );
 
         } catch (NoSuchElementException ex) {
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ex.getMessage());
+                    .body(
+                            Map.of(
+                                    "success", false,
+                                    "message", ex.getMessage()
+                            )
+                    );
 
         } catch (Exception ex) {
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Unable to update agent.");
+                    .body(
+                            Map.of(
+                                    "success", false,
+                                    "message", "Unable to update agent."
+                            )
+                    );
+
         }
+
     }
+
 }
