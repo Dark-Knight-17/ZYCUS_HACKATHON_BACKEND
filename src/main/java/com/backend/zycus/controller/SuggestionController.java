@@ -1,9 +1,12 @@
 package com.backend.zycus.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.backend.zycus.dto.SuggestionResponseDto;
 import com.backend.zycus.service.ReassignmentSuggestionService;
 @RestController
 @RequestMapping("/public/v1/suggestions")
@@ -33,6 +36,17 @@ public class SuggestionController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update failed");
+        }
+    }
+    
+    @GetMapping
+    public ResponseEntity<?> getSuggestionStatus() {
+        try {
+            List<SuggestionResponseDto> sugestions = suggestionService.getPendingSuggestions();
+            return ResponseEntity.ok(sugestions);
+        } catch (Exception e) {  
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); 
         }
     }
 }
