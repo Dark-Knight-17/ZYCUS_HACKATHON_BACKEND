@@ -68,10 +68,19 @@ public class OrderService {
     }
     
     public List<Order> findByStatus(String status) {
-        if (status == null || status.isEmpty()) {
-            return orderRepository.findAll();
+    	try {
+        if (status == null || status.isEmpty()) 
+            return this.findAll();
+        else {
+            return orderRepository.findByStatus(status);
         }
-        return orderRepository.findByStatus(status);
+        }
+    	catch(Exception e) {
+    		e.printStackTrace();
+    		
+            return this.findAll();
+
+    	}
     }
     
  // Specifically for the Reassignment orchestration

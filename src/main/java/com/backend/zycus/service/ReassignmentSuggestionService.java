@@ -63,6 +63,7 @@ public class ReassignmentSuggestionService {
             var alternatives = result.recommendations().stream().skip(1).toList();
             suggestion.setAlternativeRecommendationsJson(objectMapper.writeValueAsString(alternatives));
         } catch (Exception e) {
+        	e.printStackTrace();
             suggestion.setAlternativeRecommendationsJson("[]");
         }        
         suggestionRepository.save(suggestion);

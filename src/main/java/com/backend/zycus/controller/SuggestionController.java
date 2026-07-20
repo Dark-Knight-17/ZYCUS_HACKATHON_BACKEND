@@ -1,6 +1,5 @@
 package com.backend.zycus.controller;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +18,7 @@ public class SuggestionController {
     public SuggestionController(ReassignmentSuggestionService suggestionService) {
         this.suggestionService = suggestionService;
     }
+
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateSuggestionStatus(
             @PathVariable("id") Long id,
@@ -26,41 +26,70 @@ public class SuggestionController {
 
         try {
 
-            suggestionService.updateStatus(id, status);
+            suggestionService.updateStatus(id, status.trim());
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Suggestion updated successfully");
-            response.put("suggestionId", id);
-            response.put("status", status);
+            return ResponseEntity.ok(
+                    Map.of(
+                            "success", true,
+                            "message", "Suggestion updated successfully.",
+                            "suggestionId", id,
+                            "status", status.trim()
+                    )
+            );
 
-            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException ex) {
 
-        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    Map.of(
+                            "success", false,
+                            "message", "Invalid status format."
+                    )
+            );
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Invalid status format");
+        } catch (RuntimeException ex) {
 
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of(
+                            "success", false,
+                            "message", ex.getMessage()
+                    )
+            );
 
-        } catch (RuntimeException e) {
+        } catch (Exception ex) {
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-
-        } catch (Exception e) {
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Update failed");
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of(
+                            "success", false,
+                            "message", "Unable to update suggestion."
+                    )
+            );
 
         }
 
     }
+
+    @GetMapping
+    public ResponseEntity<?> getSuggestionStatus() {
+
+        try {
+
+            List<SuggestionResponseDto> suggestions =
+                    suggestionService.getPendingSuggestions();
+
+            return ResponseEntity.ok(suggestions);
+
+        } catch (Exception ex) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(
+                            Map.of(
+                                    "success", false,
+                                    "message", "Unable to fetch suggestions."
+                            )
+                    );
+
+        }
+
+    }
+
 }

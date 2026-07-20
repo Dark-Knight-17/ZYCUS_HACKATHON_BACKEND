@@ -44,16 +44,30 @@ public class AgentService {
     
     public List<Agent> findByStatus(String status){
     	
-        if (status == null || status.isEmpty()) {
-            return agentRepository.findAll();
-        }
-        return agentRepository.findByStatus(status);
+    	try {
+    	    if (status == null || status.isEmpty()) {
+                return findAll();
+            }
+            return agentRepository.findByStatus(status);
+
+    	}
+    	
+    	catch(Exception e ) {
+    		
+    		e.printStackTrace();
+            return findAll();
+
+    	}
+    	
+    
     }
     
     
     
     @Transactional
     public AgentDto updateStatus(String agentId, AgentStatus newStatus) {
+    	
+    	try {
         Agent agent = agentRepository.findById(Long.valueOf(agentId))
                 .orElseThrow(() -> new IllegalArgumentException("Agent not found: " + agentId));
 
@@ -70,4 +84,10 @@ public class AgentService {
 
         return dtoMapper.toAgentDto(savedAgent);
     }
+    
+    catch(Exception e) {
+    	
+    	e.printStackTrace();
+    	return null;
+    }}
 }
