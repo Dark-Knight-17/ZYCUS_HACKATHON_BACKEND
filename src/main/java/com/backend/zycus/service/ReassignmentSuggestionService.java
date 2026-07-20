@@ -1,5 +1,7 @@
 package com.backend.zycus.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -7,6 +9,7 @@ import com.backend.zycus.dto.SuggestionResponseDto;
 import com.backend.zycus.entity.Agent;
 import com.backend.zycus.entity.Order;
 import com.backend.zycus.entity.ReassignmentSuggestion;
+import com.backend.zycus.model.OrderStatus;
 import com.backend.zycus.model.SuggestionStatus;
 import com.backend.zycus.model.TriggerReason;
 import com.backend.zycus.repository.OrderRepository;
@@ -19,12 +22,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class ReassignmentSuggestionService {
 
-	
+	private static final Logger log =
+            LoggerFactory.getLogger(ReassignmentSuggestionService.class);
     private final ReassignmentSuggestionRepository suggestionRepository;
     private final DtoMapper dtoMapper;
     private final ObjectMapper objectMapper = new ObjectMapper ();
@@ -72,7 +77,7 @@ public class ReassignmentSuggestionService {
     }
 
     
-    @Transactional
+//    @Transactional
     public void updateStatus(Long id, String statusString) {
         ReassignmentSuggestion suggestion = suggestionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Suggestion not found with id: " + id));
@@ -82,10 +87,21 @@ public class ReassignmentSuggestionService {
 
         // If ACCEPTED, we perform the actual reassignment
         if (status == SuggestionStatus.ACCEPTED) {
-            Order order = suggestion.getOrder();
-            order.setAssignedAgent(suggestion.getRecommendedAgent());
-            // Update order status if  lifecycle requires it
-            orderRepository.save(order); 
+            Long orderId = suggestion.getOrder().getId();
+            Optional<Order> o = orderRepository.findById(orderId);
+            if(o.isPresent())
+            {
+            	Order order =o.get();
+                order.setAssignedAgent(suggestion.getRecommendedAgent());
+                order.setStatus(OrderStatus.REASSIGNED);
+                orderRepository.save(order); 
+            }
+             
+            else {
+            	
+            	log.error("ORDER WITH ID "+id+" NOT FOUND IN TABLE");
+            }     	
+            
         }
 
         suggestionRepository.save(suggestion);

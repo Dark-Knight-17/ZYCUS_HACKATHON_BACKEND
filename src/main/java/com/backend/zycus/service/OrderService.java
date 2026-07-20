@@ -72,7 +72,8 @@ public class OrderService {
         if (status == null || status.isEmpty()) 
             return this.findAll();
         else {
-            return orderRepository.findByStatus(status);
+        	OrderStatus orderStatus = OrderStatus.valueOf(status);
+            return orderRepository.findByStatus(orderStatus);
         }
         }
     	catch(Exception e) {

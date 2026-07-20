@@ -18,10 +18,15 @@ import com.backend.zycus.utility.DtoMapper;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class AgentService {
-
+	
+	
+	private static final Logger log =
+            LoggerFactory.getLogger(AgentService.class);
     private final AgentRepository agentRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final DtoMapper dtoMapper;
@@ -42,10 +47,10 @@ public class AgentService {
     	}
     }
     
-    public List<Agent> findByStatus(String status){
+    public List<Agent> findByStatus(AgentStatus status){
     	
     	try {
-    	    if (status == null || status.isEmpty()) {
+    	    if (status == null ) {
                 return findAll();
             }
             return agentRepository.findByStatus(status);
@@ -64,10 +69,12 @@ public class AgentService {
     
     
     
-    @Transactional
+//    @Transactional
     public AgentDto updateStatus(String agentId, AgentStatus newStatus) {
     	
     	try {
+    		
+    	log.info("INSIDE  AgentDto updateStatus ");	
         Agent agent = agentRepository.findById(Long.valueOf(agentId))
                 .orElseThrow(() -> new IllegalArgumentException("Agent not found: " + agentId));
 

@@ -25,7 +25,7 @@ public class AgentController {
 
     @GetMapping
     public ResponseEntity<?> getAgents(
-            @RequestParam(name = "status", required = false) String status) {
+            @RequestParam(name = "status", required = false) AgentStatus status) {
 
         try {
 
